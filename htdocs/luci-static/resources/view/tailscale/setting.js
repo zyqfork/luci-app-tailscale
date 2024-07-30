@@ -17,9 +17,11 @@ var callServiceList = rpc.declare({
 	params: ['name'],
 	expect: { '': {} }
 });
+
 function enquoteBigNumber(str) {
-  return str.replace(/("\w+"):\s*(\d+)/g, '$1:"$2"');
+	return str.replace(/("\w+"):\s*(\d+)/g, '$1:"$2"');
 }
+
 function getStatus() {
 	var status = {};
 	return Promise.resolve(callServiceList('tailscale')).then(function (res) {
