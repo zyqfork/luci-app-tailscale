@@ -44,7 +44,7 @@ custom_instance() {
 	[ -n "$hostname" ] && ARGS="$ARGS --hostname=$hostname"
 	[ "$acceptDNS" = "0" ] && ARGS="$ARGS --accept-dns=false"
 	[ "$advertiseExitNode" = "1" ] && ARGS="$ARGS --advertise-exit-node"
-	[ -n "$advertiseRoutes" ] && ARGS="$ARGS --advertise-routes=$advertiseRoutes"
+	[ -n "$advertiseRoutes" ] && ARGS="$ARGS --advertise-routes=$(echo $advertiseRoutes | tr ' ' ',')"
 	[ "$s2s" = "1" ] && ARGS="$ARGS --snat-subnet-routes=false"
 	[ -n "$flags" ] && ARGS="$ARGS $flags"
 	[ -n "$loginServer" ] && ARGS="$ARGS --login-server=$loginServer"
@@ -100,7 +100,6 @@ custom_instance() {
 		else
 			uci -q delete firewall.tszone
 		fi
-
 		if [ "${access//tsfwlan/}" != "$access" ]; then
 			uci set firewall.tsfwlan=forwarding
 			uci set firewall.tsfwlan.dest='lan'
