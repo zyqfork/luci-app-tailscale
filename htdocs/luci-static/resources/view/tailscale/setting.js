@@ -23,7 +23,8 @@ function getStatus() {
 		isRunning: false,
 		backendState: undefined,
 		authURL: undefined,
-		displayName: undefined
+		displayName: undefined,
+		routes: []
 	};
 	return Promise.resolve(callServiceList('tailscale')).then(res => {
 		try {
@@ -39,6 +40,8 @@ function getStatus() {
 			status.backendState = tailscaleStatus.BackendState;
 			status.authURL = tailscaleStatus.AuthURL;
 			status.displayName = (status.backendState === "Running") ? 	tailscaleStatus.User[tailscaleStatus.Self.UserID].DisplayName : undefined;
+			status.routes = Object.values(tailscaleStatus.Peer)
+				.flatMap(peer => peer.PrimaryRoutes || []);
 			return status;
 		});
 	}).catch(() => status);
@@ -74,13 +77,15 @@ function renderLogin(loginStatus, authURL, displayName) {
 return view.extend({
 	load: function() {
 		return Promise.all([
-			uci.load('tailscale')
+			uci.load('tailscale'),
+			getStatus()
 		]);
 	},
 
 	render: function(data) {
 		var m, s, o;
-		var isRunning = data[1];
+		var statusData = data[1];
+		var routes = statusData.routes;
 
 		m = new form.Map('tailscale', _('Tailscale'), _('Tailscale is a cross-platform and easy to use virtual LAN.'));
 
@@ -171,6 +176,19 @@ return view.extend({
 		o.default = o.disabled;
 		o.depends('acceptRoutes', '1');
 		o.rmempty = false;
+
+		o = s.taboption('advance', form.DynamicList, 'subnetRoutes', _('Subnet Routes'), _('Select subnet routes advertised by other nodes in Tailscale network.'));
+		if (routes.length > 0) {
+			routes.forEach(function(route) {
+				o.value(route, route);
+			});
+		} else {
+			o.value('', _('No Available Subnet Routes'));
+			o.readonly = true;
+		}
+		o.default = '';
+		o.depends('s2s', '1');
+		o.rmempty = true;
 
 		o = s.taboption('advance', form.MultiValue, 'access', _('Access Control'));
 		o.value('tsfwlan', _('Tailscale access LAN'));
