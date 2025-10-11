@@ -194,13 +194,13 @@ local function render_login(loginStatus, authURL, displayName, loginServer)
     if loginStatus == "NeedsLogin" and authURL then
         return translate("Need to log in") .. ": " .. authURL
     elseif loginStatus == "Running" and displayName then
-        -- 创建可点击的用户名链接到Tailscale管理控制台
-        local tailscale_url = login_server or "https://login.tailscale.com"
-        return string.format('<a href="%s/admin" target="_blank">%s</a> - %s', 
-            tailscale_url, displayName, translate("Logged in"))
+        -- 创建带下划线的可点击用户名链接，添加注销按钮
+        local tailscale_url = loginServer or "https://login.tailscale.com"
+        return string.format('<a href="%s/admin" target="_blank" style="text-decoration: underline;">%s</a> <button type="button" onclick="window.location.href=\'%s\'" style="margin-left: 10px; padding: 2px 8px; font-size: 12px;">%s</button>', 
+            tailscale_url, displayName, luci.dispatcher.build_url("admin/vpn/tailscale/logout"), translate("Logout"))
     elseif loginStatus == "Running" and not authURL then
         -- 当服务运行且没有认证URL时，表示已登录但没有显示名
-        return translate("Logged in")
+        return translate("Logged in") .. ' <button type="button" onclick="window.location.href=\'' .. luci.dispatcher.build_url("admin/vpn/tailscale/logout") .. '\'" style="margin-left: 10px; padding: 2px 8px; font-size: 12px;">' .. translate("Logout") .. '</button>'
     elseif loginStatus == "Running" then
         -- 服务运行但其他情况
         return translate("Running")

@@ -14,7 +14,7 @@
 <script type="text/javascript">
 function clearLog() {
     if (confirm('<%:Are you sure you want to clear the log display? This will not delete actual log files.%>')) {
-        var logContent = document.getElementById('log_content');
+        var logContent = document.getElementById('widget.log_content') || document.querySelector('[id*="log_content"]');
         if (logContent) {
             logContent.value = '<%:Log display cleared. Refresh to view logs again.%>';
         }
@@ -22,7 +22,7 @@ function clearLog() {
 }
 
 function exportLog() {
-    var logContent = document.getElementById('log_content');
+    var logContent = document.getElementById('widget.log_content') || document.querySelector('[id*="log_content"]');
     if (logContent && logContent.value) {
         var blob = new Blob([logContent.value], { type: 'text/plain' });
         var url = window.URL.createObjectURL(blob);

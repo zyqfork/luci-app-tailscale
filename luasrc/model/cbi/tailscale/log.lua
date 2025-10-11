@@ -24,8 +24,12 @@ local function get_log_data()
             logread_cmd .. " -e tailscale 2>/dev/null",
             -- 方式2: 使用grep过滤
             logread_cmd .. " 2>/dev/null | grep -i tailscale",
-            -- 方式3: 获取最近100行然后过滤
-            logread_cmd .. " | tail -200 | grep -i tailscale"
+            -- 方式3: 获取最近200行然后过滤
+            logread_cmd .. " | tail -200 | grep -i tailscale",
+            -- 方式4: 尝试tailscaled标签
+            logread_cmd .. " -e tailscaled 2>/dev/null",
+            -- 方式5: 更广泛的搜索
+            logread_cmd .. " 2>/dev/null | grep -E '(tailscale|tailscaled)'"
         }
         
         local result = ""
@@ -40,24 +44,15 @@ local function get_log_data()
             local lines = {}
             
             for line in result:gmatch("[^\r\n]+") do
-                -- 简化日志格式，保留关键信息
+                -- 保留原始日志格式，只进行简单清理
                 local formatted_line = line
                 
-                -- 尝试解析标准syslog格式
-                if line:match("^%w+%s+%d+%s+%d+:%d+:%d+") then
-                    -- 格式: Month Day Time hostname tag: message
-                    local time_part = line:match("^(%w+%s+%d+%s+%d+:%d+:%d+)")
-                    local message_part = line:match(":%s*(.+)$") or line
-                    
-                    if message_part:lower():match("tailscale") then
-                        formatted_line = time_part .. " - " .. message_part
-                    end
-                elseif line:lower():match("tailscale") then
-                    -- 任何包含tailscale的行都保留
-                    formatted_line = line
-                end
+                -- 移除多余的空白字符
+                formatted_line = formatted_line:gsub("^%s+", "")
+                formatted_line = formatted_line:gsub("%s+$", "")
                 
-                if formatted_line and #formatted_line > 0 then
+                -- 确保包含tailscale相关内容
+                if formatted_line:lower():match("tailscale") or formatted_line:lower():match("tailscaled") then
                     table.insert(lines, formatted_line)
                 end
             end
@@ -75,7 +70,8 @@ local function get_log_data()
             "/var/log/messages",  -- OpenWrt常见日志文件
             "/var/log/syslog",    -- 标准syslog
             "/tmp/tailscale.log", -- tailscale特定日志
-            "/var/log/tailscale.log"
+            "/var/log/tailscale.log",
+            "/var/log/daemon.log"
         }
         
         for _, log_file in ipairs(log_files) do
@@ -118,6 +114,14 @@ m.submit = false
 -- 获取日志数据
 local log_info = get_log_data()
 
+-- 调试信息 - 显示日志获取结果
+local debug_info = ""
+if log_info.value and #log_info.value > 0 then
+    debug_info = string.format("Found %d lines of logs", log_info.rows - 1)
+else
+    debug_info = "No logs found"
+end
+
 -- 添加日志级别选择
 local log_level = m:field(ListValue, "log_level", translate("Log Level"))
 log_level:value("all", translate("All"))
@@ -129,6 +133,10 @@ log_level.write = function(self, section, value)
     -- 这里可以添加按级别过滤的逻辑
     m.log_level_filter = value
 end
+
+-- 添加调试信息显示
+local debug_field = m:field(DummyValue, "debug_info", translate("Debug Info"))
+debug_field.value = debug_info
 
 -- 添加控制按钮
 local button_container = m:field(DummyValue, "buttons", translate("Actions"))
