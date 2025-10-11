@@ -79,7 +79,7 @@ local log_text = m:field(TextValue, "log_content")
 log_text.template = "cbi/tvalue"
 log_text.rows = log_info.rows
 log_text.readonly = true
-log_text:value(log_info.value or translate("Log is empty."))
+log_text.default = log_info.value or translate("Log is empty.")
 
 -- 添加滚动到底部按钮
 local scroll_down = m:field(Button, "scroll_down", translate("Scroll to tail"))

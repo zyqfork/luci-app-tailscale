@@ -95,7 +95,7 @@ else
     o = s:option(DummyValue, "ipv4", translate("IPv4 Address"))
     o.width = "25%"
     o.cfgvalue = function(self, section)
-        local value = AbstractValue.cfgvalue(self, section)
+        local value = self.map:get(section, self.option)
         return value or translate("None")
     end
     
@@ -112,14 +112,14 @@ else
     o = s:option(DummyValue, "rxBytes", translate("Total Download"))
     o.width = "25%"
     o.cfgvalue = function(self, section)
-        local value = AbstractValue.cfgvalue(self, section)
+        local value = self.map:get(section, self.option)
         return format_bytes(value)
     end
     
     o = s:option(DummyValue, "txBytes", translate("Total Upload"))
     o.width = "25%"
     o.cfgvalue = function(self, section)
-        local value = AbstractValue.cfgvalue(self, section)
+        local value = self.map:get(section, self.option)
         return format_bytes(value)
     end
 end
