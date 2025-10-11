@@ -142,11 +142,24 @@ debug_field.value = debug_info
 local button_container = m:field(DummyValue, "buttons", translate("Actions"))
 button_container.template = "tailscale/log_buttons"
 
--- 日志显示区域
+-- 日志显示区域 - 使用DummyValue来显示日志内容
+local log_display = m:field(DummyValue, "log_display", translate("Log Content"))
+log_display.rawhtml = true
+log_display.value = string.format([[
+    <div style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
+%s
+    </div>
+]], log_info.value or translate("No logs available."))
+
+-- 备用方案：使用TextValue字段
 local log_text = m:field(TextValue, "log_content")
 log_text.template = "cbi/tvalue"
 log_text.rows = log_info.rows
 log_text.readonly = true
 log_text.default = log_info.value or translate("Log is empty.")
+log_text.cfgvalue = function(self, section)
+    return log_info.value or translate("Log is empty.")
+end
+log_text.write = function() end  -- 防止表单提交
 
 return m

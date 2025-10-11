@@ -192,7 +192,7 @@ end
 
 local function render_login(loginStatus, authURL, displayName, loginServer)
     if loginStatus == "NeedsLogin" and authURL then
-        -- 显示登录链接和二维码区域
+        -- 简化显示，只显示登录链接
         return string.format([[
             <div style="margin: 10px 0;">
                 <div style="margin-bottom: 10px;">
@@ -201,64 +201,11 @@ local function render_login(loginStatus, authURL, displayName, loginServer)
                 <div style="margin-bottom: 10px;">
                     <a href="%s" target="_blank" style="color: #0066cc; text-decoration: underline;">%s</a>
                 </div>
-                <div id="qr_code_container" style="margin-top: 15px; padding: 10px; border: 1px solid #ddd; background: #f5f5f5; display: none;">
-                    <div style="margin-bottom: 10px;"><strong>%s</strong></div>
-                    <div id="qr_code_content" style="font-family: monospace; white-space: pre; font-size: 10px; line-height: 1.2;"></div>
+                <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                    %s
                 </div>
-                <input type="button" class="btn cbi-button cbi-button-neutral" value="%s" onclick="showQRCode()" />
             </div>
-        <script type="text/javascript">
-        function showQRCode() {
-            var qrContainer = document.getElementById('qr_code_container');
-            var qrContent = document.getElementById('qr_code_content');
-            var button = event.target;
-            
-            if (qrContainer && qrContent && button) {
-                // 显示加载状态
-                qrContainer.style.display = 'block';
-                qrContent.innerHTML = '正在生成二维码...';
-                button.disabled = true;
-                button.textContent = '生成中...';
-                
-                // 通过AJAX获取二维码
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', '%s/admin/vpn/tailscale/qr', true);
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        try {
-                            var response = JSON.parse(xhr.responseText);
-                            if (response.success && response.qr_code) {
-                                // 显示二维码内容
-                                qrContent.innerHTML = '<pre style="font-family: monospace; font-size: 8px; line-height: 1; margin: 0; padding: 10px; background: white; border: 1px solid #ccc; display: inline-block;">' + 
-                                    response.qr_code.replace(/</g, '<').replace(/>/g, '>') + '</pre>';
-                                button.textContent = '二维码已生成';
-                            } else {
-                                qrContent.innerHTML = '生成二维码失败: ' + (response.error || '未知错误');
-                                button.disabled = false;
-                                button.textContent = '重新生成';
-                            }
-                        } catch (e) {
-                            qrContent.innerHTML = '解析响应失败: ' + e.message;
-                            button.disabled = false;
-                            button.textContent = '重新生成';
-                        }
-                    } else if (xhr.readyState === 4) {
-                        qrContent.innerHTML = '请求失败: HTTP ' + xhr.status;
-                        button.disabled = false;
-                        button.textContent = '重新生成';
-                    }
-                };
-                xhr.onerror = function() {
-                    qrContent.innerHTML = '网络请求失败';
-                    button.disabled = false;
-                    button.textContent = '重新生成';
-                };
-                xhr.send();
-            }
-        }
-        </script>
-        ]], translate("Need to log in"), authURL, authURL, translate("Scan QR Code to login"), 
-        translate("Show QR Code"), translate("Loading QR Code..."), translate("QR Code loaded"))
+        ]], translate("Need to log in"), authURL, authURL, translate("Please click the link above to login, or use Tailscale mobile app to scan if QR code is needed."))
         
     elseif loginStatus == "Running" and displayName then
         -- 创建带下划线的可点击用户名链接，添加注销按钮

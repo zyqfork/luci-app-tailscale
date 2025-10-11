@@ -203,6 +203,10 @@ msgstr "正在生成二维码..."
 msgid "QR Code generated"
 msgstr "二维码已生成"
 
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Please click the link above to login, or use Tailscale mobile app to scan if QR code is needed."
+msgstr "请点击上方链接登录，或使用手机APP扫描二维码（如需要）。"
+
 #: luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json:30
 msgid "Logs"
 msgstr "日志"
