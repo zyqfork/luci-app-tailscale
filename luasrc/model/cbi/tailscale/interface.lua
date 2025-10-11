@@ -9,56 +9,55 @@ local sys = require "luci.sys"
 local util = require "luci.util"
 local json = require "luci.jsonc"
 
-local function get_interface_info()
-    local interfaces = {}
-    
-    -- 执行ip命令获取接口信息
-    local cmd = "/sbin/ip -s -j addr"
-    local result = sys.exec(cmd .. " 2>/dev/null")
-    
-    if result and #result > 0 then
-        local ok, data = pcall(json.parse, result)
-        if ok and data then
-            for _, iface in ipairs(data) do
-                -- 检查是否为tailscale接口
-                if iface.ifname and iface.ifname:match("tailscale[0-9]+") then
-                    local interface_info = {
-                        name = iface.ifname,
-                        ipv4 = "",
-                        ipv6 = "",
-                        mtu = iface.mtu or "0",
-                        rxBytes = "0",
-                        txBytes = "0"
-                    }
-                    
-                    -- 解析IP地址
-                    if iface.addr_info then
-                        for _, addr in ipairs(iface.addr_info) do
-                            if addr.family == "inet" and interface_info.ipv4 == "" then
-                                interface_info.ipv4 = addr.local or ""
-                            elseif addr.family == "inet6" and interface_info.ipv6 == "" then
-                                interface_info.ipv6 = addr.local or ""
-                            end
+m = SimpleForm("tailscale", translate("Tailscale"), translate("Tailscale is a cross-platform and easy to use virtual LAN."))
+m.reset = false
+m.submit = false
+
+-- 获取接口信息
+local interfaces = {}
+local cmd = "/sbin/ip -s -j addr"
+local result = sys.exec(cmd .. " 2>/dev/null")
+
+if result and #result > 0 then
+    local ok, data = pcall(json.parse, result)
+    if ok and data then
+        for _, iface in ipairs(data) do
+            -- 检查是否为tailscale接口
+            if iface.ifname and iface.ifname:match("tailscale[0-9]+") then
+                local interface_info = {
+                    name = iface.ifname,
+                    ipv4 = "",
+                    ipv6 = "",
+                    mtu = tostring(iface.mtu or 0),
+                    rxBytes = "0",
+                    txBytes = "0"
+                }
+                
+                -- 解析IP地址
+                if iface.addr_info then
+                    for _, addr in ipairs(iface.addr_info) do
+                        if addr.family == "inet" and interface_info.ipv4 == "" then
+                            interface_info.ipv4 = addr.local or ""
+                        elseif addr.family == "inet6" and interface_info.ipv6 == "" then
+                            interface_info.ipv6 = addr.local or ""
                         end
                     end
-                    
-                    -- 解析统计信息
-                    if iface.stats64 then
-                        if iface.stats64.rx and iface.stats64.rx.bytes then
-                            interface_info.rxBytes = tostring(iface.stats64.rx.bytes)
-                        end
-                        if iface.stats64.tx and iface.stats64.tx.bytes then
-                            interface_info.txBytes = tostring(iface.stats64.tx.bytes)
-                        end
-                    end
-                    
-                    table.insert(interfaces, interface_info)
                 end
+                
+                -- 解析统计信息
+                if iface.stats64 then
+                    if iface.stats64.rx and iface.stats64.rx.bytes then
+                        interface_info.rxBytes = tostring(iface.stats64.rx.bytes)
+                    end
+                    if iface.stats64.tx and iface.stats64.tx.bytes then
+                        interface_info.txBytes = tostring(iface.stats64.tx.bytes)
+                    end
+                end
+                
+                table.insert(interfaces, interface_info)
             end
         end
     end
-    
-    return interfaces
 end
 
 local function format_bytes(bytes_str)
@@ -77,19 +76,14 @@ local function format_bytes(bytes_str)
     return string.format("%.2f %s", size, units[unit_index])
 end
 
-m = SimpleForm("tailscale", translate("Tailscale"), translate("Tailscale is a cross-platform and easy to use virtual LAN."))
-m.reset = false
-m.submit = false
-
--- 获取接口信息
-local interfaces = get_interface_info()
-
 if #interfaces == 0 then
     local s = m:section(SimpleSection)
     s:option(DummyValue, "no_interface", translate("No interface online."))
 else
     -- 创建表格显示接口信息
     local s = m:section(Table, interfaces, translate("Network Interface Information"))
+    
+    local o
     
     o = s:option(DummyValue, "name", translate("Interface Name"))
     o.width = "20%"
@@ -98,14 +92,22 @@ else
     o.width = "20%"
     o.cfgvalue = function(self, section)
         local value = self.map:get(section, "ipv4")
-        return (value and value ~= "") and value or translate("None")
+        if value and value ~= "" then
+            return value
+        else
+            return translate("None")
+        end
     end
     
     o = s:option(DummyValue, "ipv6", translate("IPv6 Address"))
     o.width = "20%"
     o.cfgvalue = function(self, section)
         local value = self.map:get(section, "ipv6")
-        return (value and value ~= "") and value or translate("None")
+        if value and value ~= "" then
+            return value
+        else
+            return translate("None")
+        end
     end
     
     o = s:option(DummyValue, "mtu", translate("MTU"))
