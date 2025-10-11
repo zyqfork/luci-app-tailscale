@@ -105,10 +105,60 @@ local function get_status()
                 status.backendState = result.BackendState
                 status.authURL = result.AuthURL
                 
-                if status.backendState == "Running" and result.Self and result.User then
+                -- 获取用户信息 - 修复科学计数法问题
+                if result.Self then
                     local userID = result.Self.UserID
-                    if userID and result.User[userID] then
-                        status.displayName = result.User[userID].DisplayName
+                    if userID and result.User then
+                        -- 尝试多种方式匹配用户ID
+                        local userInfo = nil
+                        
+                        -- 方法1: 直接匹配
+                        userInfo = result.User[userID]
+                        
+                        -- 方法2: 转换为字符串匹配
+                        if not userInfo then
+                            userInfo = result.User[tostring(userID)]
+                        end
+                        
+                        -- 方法3: 转换为数字匹配（处理科学计数法）
+                        if not userInfo then
+                            local numID = tonumber(userID)
+                            if numID then
+                                userInfo = result.User[numID]
+                            end
+                        end
+                        
+                        -- 方法4: 遍历所有用户，找到匹配的用户名
+                        if not userInfo then
+                            for _, user in pairs(result.User) do
+                                if user.ID and tonumber(user.ID) == tonumber(userID) then
+                                    userInfo = user
+                                    break
+                                end
+                            end
+                        end
+                        
+                        -- 方法5: 如果只有一个用户，直接使用
+                        if not userInfo then
+                            local userCount = 0
+                            local lastUser = nil
+                            for _, user in pairs(result.User) do
+                                userCount = userCount + 1
+                                lastUser = user
+                            end
+                            if userCount == 1 then
+                                userInfo = lastUser
+                            end
+                        end
+                        
+                        if userInfo and userInfo.DisplayName then
+                            status.displayName = userInfo.DisplayName
+                        end
+                    end
+                    
+                    -- 如果还是无法获取，使用设备名作为备选
+                    if not status.displayName and result.Self.HostName then
+                        status.displayName = result.Self.HostName
                     end
                 end
                 
