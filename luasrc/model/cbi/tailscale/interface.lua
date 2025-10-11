@@ -24,20 +24,20 @@ local function get_interface_info()
                 if iface.ifname and iface.ifname:match("tailscale[0-9]+") then
                     local interface_info = {
                         name = iface.ifname,
-                        ipv4 = nil,
-                        ipv6 = nil,
-                        mtu = iface.mtu or 0,
-                        rxBytes = 0,
-                        txBytes = 0
+                        ipv4 = "",
+                        ipv6 = "",
+                        mtu = iface.mtu or "0",
+                        rxBytes = "0",
+                        txBytes = "0"
                     }
                     
                     -- 解析IP地址
                     if iface.addr_info then
                         for _, addr in ipairs(iface.addr_info) do
-                            if addr.family == "inet" and not interface_info.ipv4 then
-                                interface_info.ipv4 = addr.local
-                            elseif addr.family == "inet6" and not interface_info.ipv6 then
-                                interface_info.ipv6 = addr.local
+                            if addr.family == "inet" and interface_info.ipv4 == "" then
+                                interface_info.ipv4 = addr.local or ""
+                            elseif addr.family == "inet6" and interface_info.ipv6 == "" then
+                                interface_info.ipv6 = addr.local or ""
                             end
                         end
                     end
@@ -45,10 +45,10 @@ local function get_interface_info()
                     -- 解析统计信息
                     if iface.stats64 then
                         if iface.stats64.rx and iface.stats64.rx.bytes then
-                            interface_info.rxBytes = iface.stats64.rx.bytes
+                            interface_info.rxBytes = tostring(iface.stats64.rx.bytes)
                         end
                         if iface.stats64.tx and iface.stats64.tx.bytes then
-                            interface_info.txBytes = iface.stats64.tx.bytes
+                            interface_info.txBytes = tostring(iface.stats64.tx.bytes)
                         end
                     end
                     
@@ -61,11 +61,12 @@ local function get_interface_info()
     return interfaces
 end
 
-local function format_bytes(bytes)
-    if not bytes or bytes == 0 then return "0 B" end
+local function format_bytes(bytes_str)
+    local bytes = tonumber(bytes_str) or 0
+    if bytes == 0 then return "0 B" end
     
     local units = {"B", "KB", "MB", "GB", "TB"}
-    local size = tonumber(bytes)
+    local size = bytes
     local unit_index = 1
     
     while size >= 1024 and unit_index < #units do
@@ -84,42 +85,43 @@ m.submit = false
 local interfaces = get_interface_info()
 
 if #interfaces == 0 then
-    m:field(DummyValue, "no_interface", translate("No interface online."))
+    local s = m:section(SimpleSection)
+    s:option(DummyValue, "no_interface", translate("No interface online."))
 else
     -- 创建表格显示接口信息
     local s = m:section(Table, interfaces, translate("Network Interface Information"))
     
     o = s:option(DummyValue, "name", translate("Interface Name"))
-    o.width = "25%"
+    o.width = "20%"
     
     o = s:option(DummyValue, "ipv4", translate("IPv4 Address"))
-    o.width = "25%"
+    o.width = "20%"
     o.cfgvalue = function(self, section)
-        local value = self.map:get(section, self.option)
-        return value or translate("None")
+        local value = self.map:get(section, "ipv4")
+        return (value and value ~= "") and value or translate("None")
     end
     
     o = s:option(DummyValue, "ipv6", translate("IPv6 Address"))
-    o.width = "25%"
+    o.width = "20%"
     o.cfgvalue = function(self, section)
-        local value = AbstractValue.cfgvalue(self, section)
-        return value or translate("None")
+        local value = self.map:get(section, "ipv6")
+        return (value and value ~= "") and value or translate("None")
     end
     
     o = s:option(DummyValue, "mtu", translate("MTU"))
-    o.width = "25%"
+    o.width = "13%"
     
-    o = s:option(DummyValue, "rxBytes", translate("Total Download"))
-    o.width = "25%"
+    o = s:option(DummyValue, "rxBytes", translate("Download"))
+    o.width = "13%"
     o.cfgvalue = function(self, section)
-        local value = self.map:get(section, self.option)
+        local value = self.map:get(section, "rxBytes")
         return format_bytes(value)
     end
     
-    o = s:option(DummyValue, "txBytes", translate("Total Upload"))
-    o.width = "25%"
+    o = s:option(DummyValue, "txBytes", translate("Upload"))
+    o.width = "14%"
     o.cfgvalue = function(self, section)
-        local value = self.map:get(section, self.option)
+        local value = self.map:get(section, "txBytes")
         return format_bytes(value)
     end
 end
