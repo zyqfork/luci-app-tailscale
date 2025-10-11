@@ -37,9 +37,9 @@ if result and #result > 0 then
                 if iface.addr_info then
                     for _, addr in ipairs(iface.addr_info) do
                         if addr.family == "inet" and interface_info.ipv4 == "" then
-                            interface_info.ipv4 = addr.local or ""
+                            interface_info.ipv4 = addr["local"] or ""
                         elseif addr.family == "inet6" and interface_info.ipv6 == "" then
-                            interface_info.ipv6 = addr.local or ""
+                            interface_info.ipv6 = addr["local"] or ""
                         end
                     end
                 end

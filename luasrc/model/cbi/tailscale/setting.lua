@@ -134,21 +134,19 @@ end
 
 local function render_status(isRunning)
     if isRunning then
-        return "<em><span style='color:green'><strong>" .. translate("Tailscale") .. " " .. translate("RUNNING") .. "</strong></span></em>"
+        return translate("Tailscale") .. " " .. translate("RUNNING")
     else
-        return "<em><span style='color:red'><strong>" .. translate("Tailscale") .. " " .. translate("NOT RUNNING") .. "</strong></span></em>"
+        return translate("Tailscale") .. " " .. translate("NOT RUNNING")
     end
 end
 
 local function render_login(loginStatus, authURL, displayName)
     if loginStatus == "NeedsLogin" and authURL then
-        return '<a href="' .. authURL .. '" target="_blank">' .. translate("Need to log in") .. '</a>'
+        return translate("Need to log in") .. ": " .. authURL
     elseif loginStatus == "Running" and displayName then
-        local html = '<a href="https://login.tailscale.com/admin/machines" target="_blank">' .. displayName .. '</a>'
-        html = html .. '<br><a style="color:green" id="logout_button">' .. translate("Log out and Unbind") .. '</a>'
-        return html
+        return displayName .. " - " .. translate("Logged in")
     else
-        return '<span style="color:orange">' .. translate("NOT RUNNING") .. '</span>'
+        return translate("NOT RUNNING")
     end
 end
 
