@@ -5,8 +5,8 @@ config tailscale 'settings'
 	option port '41641'
 	# Path to config file
 	option config_path '/etc/tailscale'
-	# Default to using nftables - change below to 'iptables' if still using iptables
-	option fw_mode 'nftables'
+	# Default to using iptables - change below to 'nftables' if using nftables
+	option fw_mode 'iptables'
 	# Enable stdout log
 	option log_stdout '1'
 	# Enable stderr log

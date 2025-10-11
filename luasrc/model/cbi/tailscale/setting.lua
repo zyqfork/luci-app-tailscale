@@ -205,7 +205,7 @@ local function render_login(loginStatus, authURL, displayName, loginServer)
                     <div style="margin-bottom: 10px;"><strong>%s</strong></div>
                     <div id="qr_code_content" style="font-family: monospace; white-space: pre; font-size: 10px; line-height: 1.2;"></div>
                 </div>
-                <button type="button" onclick="showQRCode()" style="margin-top: 10px; padding: 5px 10px;">%s</button>
+                <input type="button" class="btn cbi-button cbi-button-neutral" value="%s" onclick="showQRCode()" />
             </div>
         <script type="text/javascript">
         function showQRCode() {
@@ -222,7 +222,7 @@ local function render_login(loginStatus, authURL, displayName, loginServer)
                 
                 // 通过AJAX获取二维码
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', '%s', true);
+                xhr.open('GET', '%s/admin/vpn/tailscale/qr', true);
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === 4 && xhr.status === 200) {
                         try {
@@ -263,11 +263,11 @@ local function render_login(loginStatus, authURL, displayName, loginServer)
     elseif loginStatus == "Running" and displayName then
         -- 创建带下划线的可点击用户名链接，添加注销按钮
         local tailscale_url = loginServer or "https://login.tailscale.com"
-        return string.format('<a href="%s/admin" target="_blank" style="text-decoration: underline;">%s</a> <button type="button" onclick="window.location.href=\'%s\'" style="margin-left: 10px; padding: 2px 8px; font-size: 12px;">%s</button>', 
-            tailscale_url, displayName, luci.dispatcher.build_url("admin/vpn/tailscale/logout"), translate("Logout"))
+        return string.format('<a href="%s/admin" target="_blank" style="text-decoration: underline;">%s</a> <input type="button" class="btn cbi-button cbi-button-neutral" value="%s" onclick="window.location.href=\'%s\'" style="margin-left: 10px;" />', 
+            tailscale_url, displayName, translate("Logout"), luci.dispatcher.build_url("admin/vpn/tailscale/logout"))
     elseif loginStatus == "Running" and not authURL then
         -- 当服务运行且没有认证URL时，表示已登录但没有显示名
-        return translate("Logged in") .. ' <button type="button" onclick="window.location.href=\'' .. luci.dispatcher.build_url("admin/vpn/tailscale/logout") .. '\'" style="margin-left: 10px; padding: 2px 8px; font-size: 12px;">' .. translate("Logout") .. '</button>'
+        return translate("Logged in") .. ' <input type="button" class="btn cbi-button cbi-button-neutral" value="' .. translate("Logout") .. '" onclick="window.location.href=\'' .. luci.dispatcher.build_url("admin/vpn/tailscale/logout") .. '\'" style="margin-left: 10px;" />'
     elseif loginStatus == "Running" then
         -- 服务运行但其他情况
         return translate("Running")
