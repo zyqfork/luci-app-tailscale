@@ -1,0 +1,72 @@
+<%#
+-- SPDX-License-Identifier: GPL-3.0-only
+--
+-- Copyright (C) 2024 asvow
+-- Tailscale log page buttons template
+-%>
+
+<div class="cbi-value-field">
+    <input type="button" class="btn cbi-button cbi-button-neutral" value="<%:Refresh%>" onclick="location.reload()" />
+    <input type="button" class="btn cbi-button cbi-button-neutral" value="<%:Clear Log%>" onclick="clearLog()" />
+    <input type="button" class="btn cbi-button cbi-button-neutral" value="<%:Export Log%>" onclick="exportLog()" />
+</div>
+
+<script type="text/javascript">
+function clearLog() {
+    if (confirm('<%:Are you sure you want to clear the log display? This will not delete actual log files.%>')) {
+        var logContent = document.getElementById('log_content');
+        if (logContent) {
+            logContent.value = '<%:Log display cleared. Refresh to view logs again.%>';
+        }
+    }
+}
+
+function exportLog() {
+    var logContent = document.getElementById('log_content');
+    if (logContent && logContent.value) {
+        var blob = new Blob([logContent.value], { type: 'text/plain' });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'tailscale_logs_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    } else {
+        alert('<%:No log content to export%>');
+    }
+}
+
+// 自动刷新功能
+var autoRefresh = false;
+var refreshInterval;
+
+function toggleAutoRefresh() {
+    autoRefresh = !autoRefresh;
+    var btn = document.getElementById('auto_refresh_btn');
+    if (autoRefresh) {
+        refreshInterval = setInterval(function() {
+            location.reload();
+        }, 10000); // 10秒刷新一次
+        if (btn) btn.value = '<%:Stop Auto Refresh%>';
+    } else {
+        clearInterval(refreshInterval);
+        if (btn) btn.value = '<%:Auto Refresh%>';
+    }
+}
+
+// 添加自动刷新按钮
+document.addEventListener('DOMContentLoaded', function() {
+    var buttonContainer = document.querySelector('.cbi-value-field');
+    if (buttonContainer) {
+        var autoRefreshBtn = document.createElement('input');
+        autoRefreshBtn.type = 'button';
+        autoRefreshBtn.id = 'auto_refresh_btn';
+        autoRefreshBtn.className = 'btn cbi-button cbi-button-neutral';
+        autoRefreshBtn.value = '<%:Auto Refresh%>';
+        autoRefreshBtn.onclick = toggleAutoRefresh;
+        buttonContainer.appendChild(autoRefreshBtn);
+    }
+});
+</script>
