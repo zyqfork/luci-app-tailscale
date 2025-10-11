@@ -49,7 +49,7 @@ function get_status()
 				status.backendState = result.BackendState
 				status.authURL = result.AuthURL
 				
-				if status.backendState == "Running" and result.Self and result.User then
+				if result.Self and result.User then
 					local userID = result.Self.UserID
 					if userID and result.User[userID] then
 						status.displayName = result.User[userID].DisplayName

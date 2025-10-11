@@ -145,7 +145,23 @@ msgstr "记录程序错误和警告信息。"
 
 #: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
 msgid "Login Status"
-msgstr "已绑定用户"
+msgstr "登录状态"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Logged in"
+msgstr "已登录"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Starting"
+msgstr "启动中"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Stopped"
+msgstr "已停止"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Unknown"
+msgstr "未知"
 
 #: luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json:30
 msgid "Logs"

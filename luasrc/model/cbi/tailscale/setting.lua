@@ -145,8 +145,19 @@ local function render_login(loginStatus, authURL, displayName)
         return translate("Need to log in") .. ": " .. authURL
     elseif loginStatus == "Running" and displayName then
         return displayName .. " - " .. translate("Logged in")
+    elseif loginStatus == "Running" and not authURL then
+        -- 当服务运行且没有认证URL时，表示已登录但没有显示名
+        return translate("Logged in")
+    elseif loginStatus == "Running" then
+        -- 服务运行但其他情况
+        return translate("Running")
+    elseif loginStatus == "Starting" then
+        return translate("Starting")
+    elseif loginStatus == "Stopped" then
+        return translate("Stopped")
     else
-        return translate("NOT RUNNING")
+        -- 其他未知状态，显示具体状态值
+        return loginStatus or translate("Unknown")
     end
 end
 
