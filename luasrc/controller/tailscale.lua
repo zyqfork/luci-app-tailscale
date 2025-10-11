@@ -19,8 +19,9 @@ function index()
 	entry({"admin", "vpn", "tailscale", "log"}, cbi("tailscale/log"), _("Logs"), 30)
 	
 	-- AJAX接口
-	entry({"admin", "vpn", "tailscale", "status"}, call("get_status")).leaf = true
+entry({"admin", "vpn", "tailscale", "status"}, call("get_status")).leaf = true
 	entry({"admin", "vpn", "tailscale", "logout"}, call("action_logout")).leaf = true
+	entry({"admin", "vpn", "tailscale", "qr"}, call("get_qr_code")).leaf = true
 end
 
 function get_status()
@@ -85,4 +86,35 @@ function action_logout()
 	
 	luci.http.prepare_content("application/json")
 	luci.http.write_json({ success = (result == 0) })
+end
+
+function get_qr_code()
+	local sys = require "luci.sys"
+	
+	-- 获取tailscale状态以获取认证URL
+	local tailscale_status = sys.exec("/usr/sbin/tailscale status --json 2>/dev/null")
+	if tailscale_status and #tailscale_status > 0 then
+		local json = require "luci.jsonc"
+		local ok, result = pcall(json.parse, tailscale_status)
+		if ok and result and result.AuthURL and #result.AuthURL > 0 then
+			-- 生成二维码文本
+			local qr_text = sys.exec("/usr/sbin/tailscale up --qr 2>/dev/null")
+			if qr_text and #qr_text > 0 then
+				luci.http.prepare_content("application/json")
+				luci.http.write_json({ 
+					success = true, 
+					qr_code = qr_text,
+					auth_url = result.AuthURL
+				})
+				return
+			end
+		end
+	end
+	
+	-- 如果获取失败，返回错误信息
+	luci.http.prepare_content("application/json")
+	luci.http.write_json({ 
+		success = false, 
+		error = "Unable to generate QR code. Please ensure Tailscale is installed and the service is running."
+	})
 end

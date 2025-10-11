@@ -179,6 +179,30 @@ msgstr "点击进入Tailscale管理控制台"
 msgid "Logout"
 msgstr "注销"
 
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Scan QR Code to login"
+msgstr "扫描二维码登录"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Show QR Code"
+msgstr "显示二维码"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Loading QR Code..."
+msgstr "正在加载二维码..."
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "QR Code loaded"
+msgstr "二维码已加载"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Generating QR Code..."
+msgstr "正在生成二维码..."
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "QR Code generated"
+msgstr "二维码已生成"
+
 #: luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json:30
 msgid "Logs"
 msgstr "日志"
