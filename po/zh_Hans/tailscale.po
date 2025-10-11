@@ -163,6 +163,18 @@ msgstr "已停止"
 msgid "Unknown"
 msgstr "未知"
 
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Running"
+msgstr "运行中"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Need to log in"
+msgstr "需要登录"
+
+#: luci-app-tailscale/htdocs/luci-static/resources/view/tailscale/setting.js:147
+msgid "Click to open Tailscale admin console"
+msgstr "点击进入Tailscale管理控制台"
+
 #: luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json:30
 msgid "Logs"
 msgstr "日志"

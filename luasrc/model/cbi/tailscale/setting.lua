@@ -140,11 +140,14 @@ local function render_status(isRunning)
     end
 end
 
-local function render_login(loginStatus, authURL, displayName)
+local function render_login(loginStatus, authURL, displayName, loginServer)
     if loginStatus == "NeedsLogin" and authURL then
         return translate("Need to log in") .. ": " .. authURL
     elseif loginStatus == "Running" and displayName then
-        return displayName .. " - " .. translate("Logged in")
+        -- 创建可点击的用户名链接到Tailscale管理控制台
+        local tailscale_url = login_server or "https://login.tailscale.com"
+        return string.format('<a href="%s/admin" target="_blank">%s</a> - %s', 
+            tailscale_url, displayName, translate("Logged in"))
     elseif loginStatus == "Running" and not authURL then
         -- 当服务运行且没有认证URL时，表示已登录但没有显示名
         return translate("Logged in")
@@ -170,7 +173,13 @@ m = Map("tailscale", translate("Tailscale"), translate("Tailscale is a cross-pla
 s = m:section(TypedSection, "tailscale", translate("Service Status"))
 s.anonymous = true
 s:option(DummyValue, "status", translate("Status")).value = render_status(status.isRunning)
-s:option(DummyValue, "login", translate("Login Status")).value = render_login(status.backendState, status.authURL, status.displayName)
+
+-- 获取自定义服务器地址
+local login_server = uci:get("tailscale", "settings", "login_server") or ""
+local login_status = s:option(DummyValue, "login", translate("Login Status"))
+login_status.value = render_login(status.backendState, status.authURL, status.displayName, login_server)
+-- 允许HTML内容
+login_status.rawhtml = true
 
 -- 基本设置
 s = m:section(NamedSection, "settings", "config", translate("Basic Settings"))
