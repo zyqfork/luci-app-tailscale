@@ -142,24 +142,33 @@ debug_field.value = debug_info
 local button_container = m:field(DummyValue, "buttons", translate("Actions"))
 button_container.template = "tailscale/log_buttons"
 
--- 日志显示区域 - 使用DummyValue来显示日志内容
-local log_display = m:field(DummyValue, "log_display", translate("Log Content"))
-log_display.rawhtml = true
-log_display.value = string.format([[
-    <div style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
-%s
-    </div>
-]], log_info.value or translate("No logs available."))
-
--- 备用方案：使用TextValue字段
-local log_text = m:field(TextValue, "log_content")
+-- 日志显示区域 - 使用TextValue字段显示日志内容
+local log_text = m:field(TextValue, "log_content", translate("Log Content"))
 log_text.template = "cbi/tvalue"
 log_text.rows = log_info.rows
 log_text.readonly = true
-log_text.default = log_info.value or translate("Log is empty.")
+log_text.default = log_info.value or translate("No logs available.")
 log_text.cfgvalue = function(self, section)
-    return log_info.value or translate("Log is empty.")
+    return log_info.value or translate("No logs available.")
 end
 log_text.write = function() end  -- 防止表单提交
+
+-- 添加CSS样式来美化日志显示
+local css_style = m:field(DummyValue, "css_style")
+css_style.rawhtml = true
+css_style.value = [[
+<style>
+#widget\.log_content, [id*="log_content"] {
+    background-color: #f5f5f5 !important;
+    border: 1px solid #ddd !important;
+    font-family: monospace !important;
+    font-size: 12px !important;
+    white-space: pre-wrap !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+    padding: 10px !important;
+}
+</style>
+]]
 
 return m
