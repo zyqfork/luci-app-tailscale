@@ -18,18 +18,22 @@ local function get_log_data()
     end
     
     if fs.access(logread_cmd) then
-        -- 尝试多种方式获取tailscale日志
+        -- 尝试多种方式获取tailscale日志，包括错误信息
         local commands = {
-            -- 方式1: 直接过滤tailscale相关日志
-            logread_cmd .. " -e tailscale 2>/dev/null",
-            -- 方式2: 使用grep过滤
-            logread_cmd .. " 2>/dev/null | grep -i tailscale",
-            -- 方式3: 获取最近200行然后过滤
-            logread_cmd .. " | tail -200 | grep -i tailscale",
+            -- 方式1: 直接过滤tailscale相关日志（包括错误）
+            logread_cmd .. " -e tailscale 2>&1",
+            -- 方式2: 使用grep过滤（包括错误）
+            logread_cmd .. " 2>&1 | grep -i tailscale",
+            -- 方式3: 获取最近500行然后过滤（增加行数）
+            logread_cmd .. " | tail -500 | grep -i tailscale",
             -- 方式4: 尝试tailscaled标签
-            logread_cmd .. " -e tailscaled 2>/dev/null",
-            -- 方式5: 更广泛的搜索
-            logread_cmd .. " 2>/dev/null | grep -E '(tailscale|tailscaled)'"
+            logread_cmd .. " -e tailscaled 2>&1",
+            -- 方式5: 更广泛的搜索（包括错误）
+            logread_cmd .. " 2>&1 | grep -E '(tailscale|tailscaled)'",
+            -- 方式6: 获取所有日志然后过滤
+            logread_cmd .. " 2>&1 | grep -i 'tailscale\\|tailscaled'",
+            -- 方式7: 获取最近的tailscale相关日志
+            logread_cmd .. " 2>&1 | grep -i 'tailscale' | tail -100"
         }
         
         local result = ""
@@ -51,7 +55,7 @@ local function get_log_data()
                 formatted_line = formatted_line:gsub("^%s+", "")
                 formatted_line = formatted_line:gsub("%s+$", "")
                 
-                -- 确保包含tailscale相关内容
+                -- 确保包含tailscale相关内容（更宽松的匹配）
                 if formatted_line:lower():match("tailscale") or formatted_line:lower():match("tailscaled") then
                     table.insert(lines, formatted_line)
                 end
@@ -142,8 +146,8 @@ debug_field.value = debug_info
 local button_container = m:field(DummyValue, "buttons", translate("Actions"))
 button_container.template = "tailscale/log_buttons"
 
--- 日志显示区域 - 使用TextValue字段显示日志内容
-local log_text = m:field(TextValue, "log_content", translate("Log Content"))
+-- 日志显示区域 - 使用TextValue字段显示日志内容（无标签）
+local log_text = m:field(TextValue, "log_content")
 log_text.template = "cbi/tvalue"
 log_text.rows = log_info.rows
 log_text.readonly = true
@@ -153,20 +157,57 @@ log_text.cfgvalue = function(self, section)
 end
 log_text.write = function() end  -- 防止表单提交
 
--- 添加CSS样式来美化日志显示
+-- 添加CSS样式来美化日志显示（紧凑布局）
 local css_style = m:field(DummyValue, "css_style")
 css_style.rawhtml = true
 css_style.value = [[
 <style>
+/* 紧凑布局样式 */
+.cbi-value {
+    margin-bottom: 5px !important;
+}
+.cbi-value-title {
+    padding: 2px 0 !important;
+    width: 100px !important;
+}
+.cbi-value-field {
+    padding: 2px 0 !important;
+}
+
+/* 日志显示区域样式 */
 #widget\.log_content, [id*="log_content"] {
-    background-color: #f5f5f5 !important;
-    border: 1px solid #ddd !important;
-    font-family: monospace !important;
-    font-size: 12px !important;
+    background-color: #1e1e1e !important;
+    color: #d4d4d4 !important;
+    border: 1px solid #333 !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 11px !important;
     white-space: pre-wrap !important;
-    max-height: 400px !important;
+    max-height: 500px !important;
     overflow-y: auto !important;
-    padding: 10px !important;
+    padding: 8px !important;
+    line-height: 1.4 !important;
+    border-radius: 3px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* 按钮样式优化 */
+.cbi-button {
+    margin: 2px !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+}
+
+/* 调试信息样式 */
+#widget\.debug_info {
+    font-size: 11px !important;
+    color: #666 !important;
+}
+
+/* 日志级别选择器样式 */
+#widget\.log_level {
+    font-size: 11px !important;
+    padding: 2px !important;
 }
 </style>
 ]]

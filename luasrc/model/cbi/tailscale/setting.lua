@@ -205,7 +205,7 @@ local function render_login(loginStatus, authURL, displayName, loginServer)
                     %s
                 </div>
             </div>
-        ]], translate("Need to log in"), authURL, authURL, translate("Please click the link above to login, or use Tailscale mobile app to scan if QR code is needed."))
+        ]], translate("Need to log in"), authURL, authURL, translate("Please click the link above to login"))
         
     elseif loginStatus == "Running" and displayName then
         -- 创建带下划线的可点击用户名链接，添加注销按钮
