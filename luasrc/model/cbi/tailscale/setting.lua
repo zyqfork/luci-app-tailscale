@@ -340,8 +340,8 @@ o:value("ts_ac_lan", translate("Tailscale access LAN"))
 o:value("ts_ac_wan", translate("Tailscale access WAN"))
 o:value("lan_ac_ts", translate("LAN access Tailscale"))
 o:value("wan_ac_ts", translate("WAN access Tailscale"))
-o.default = "ts_ac_lan ts_ac_wan lan_ac_ts"
-o.rmempty = true
+o.default = "ts_ac_lan lan_ac_ts"
+o.rmempty = false
 
 -- 额外设置
 s = m:section(NamedSection, "settings", "config", translate("Extra Settings"))
