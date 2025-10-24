@@ -54,7 +54,7 @@ jobs:
             repo: https://github.com/zyqfork/luci-app-tailscale.git
             repo_branch: lua
             op_repo: https://github.com/coolsnowwolf/lede.git
-            op_branch: main
+            op_branch: master
 
     steps:
       - name: Before freeing up disk space
