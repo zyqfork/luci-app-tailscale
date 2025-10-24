@@ -47,7 +47,7 @@ jobs:
             op_branch: main
           - name: luci-app-tailscale
             repo: https://github.com/zyqfork/luci-app-tailscale.git
-            repo_branch: lua
+            repo_branch: main
             op_repo: https://github.com/openwrt/openwrt
             op_branch: openwrt-23.05
           - name: luci-app-tailscale
@@ -112,6 +112,7 @@ jobs:
           echo CONFIG_TARGET_x86_64=y >> .config
           echo CONFIG_TARGET_x86_64_DEVICE_generic=y >> .config
           echo CONFIG_PACKAGE_${{ matrix.plugin.name }}=y >> .config
+          sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
 
       - name: SSH connection to Actions
         uses: lhotari/action-upterm@v1
