@@ -47,10 +47,7 @@ jobs:
             repo: https://github.com/zyqfork/luci-app-tailscale.git
             repo_branch: main
             op_repo: https://github.com/openwrt/openwrt
-            targets:
-              - x86
-              - x86_64
-              - x86_64_DEVICE_generic
+            targets: CONFIG_TARGET_x86 CONFIG_TARGET_x86_64 CONFIG_TARGET_x86_64_DEVICE_generic
             op_branch: main
           - name: luci-app-tailscale
             tag: x86_64_ipk
@@ -59,10 +56,7 @@ jobs:
             repo: https://github.com/zyqfork/luci-app-tailscale.git
             repo_branch: main
             op_repo: https://github.com/openwrt/openwrt
-            targets:
-              - x86
-              - x86_64
-              - x86_64_DEVICE_generic
+            targets: CONFIG_TARGET_x86 CONFIG_TARGET_x86_64 CONFIG_TARGET_x86_64_DEVICE_generic
             op_branch: openwrt-23.05
           - name: luci-app-tailscale
             tag: x86_64_ipk_lede
@@ -71,10 +65,7 @@ jobs:
             repo: https://github.com/zyqfork/luci-app-tailscale.git
             repo_branch: lua
             op_repo: https://github.com/coolsnowwolf/lede.git
-            targets:
-              - x86
-              - x86_64
-              - x86_64_DEVICE_generic
+            targets: CONFIG_TARGET_x86 CONFIG_TARGET_x86_64 CONFIG_TARGET_x86_64_DEVICE_generic
             op_branch: master
           - name: luci-app-tailscale
             tag: aarch64_ipk_lede
