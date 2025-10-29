@@ -41,19 +41,49 @@ jobs:
       matrix:
         plugin:
           - name: luci-app-tailscale
+            tag: x86_64_apk
+            extras:
+              - tailscale
             repo: https://github.com/zyqfork/luci-app-tailscale.git
             repo_branch: main
             op_repo: https://github.com/openwrt/openwrt
+            targets:
+              - x86
+              - x86_64
+              - x86_64_DEVICE_generic
             op_branch: main
           - name: luci-app-tailscale
+            tag: x86_64_ipk
+            extras:
+              - tailscale
             repo: https://github.com/zyqfork/luci-app-tailscale.git
             repo_branch: main
             op_repo: https://github.com/openwrt/openwrt
+            targets:
+              - x86
+              - x86_64
+              - x86_64_DEVICE_generic
             op_branch: openwrt-23.05
           - name: luci-app-tailscale
+            tag: x86_64_ipk_lede
+            extras:
+              - tailscale
             repo: https://github.com/zyqfork/luci-app-tailscale.git
             repo_branch: lua
             op_repo: https://github.com/coolsnowwolf/lede.git
+            targets:
+              - x86
+              - x86_64
+              - x86_64_DEVICE_generic
+            op_branch: master
+          - name: luci-app-tailscale
+            tag: aarch64_ipk_lede
+            extras:
+              - tailscale
+            repo: https://github.com/zyqfork/luci-app-tailscale.git
+            repo_branch: lua
+            op_repo: https://github.com/coolsnowwolf/lede.git
+            targets: CONFIG_TARGET_mediatek CONFIG_TARGET_mediatek_filogic CONFIG_TARGET_mediatek_filogic_DEVICE_jdcloud_re-cs-05
             op_branch: master
 
     steps:
@@ -108,9 +138,12 @@ jobs:
         run: |
           cd openwrt
           git clone ${{ matrix.plugin.repo }} -b ${{ matrix.plugin.repo_branch }} package/${{ matrix.plugin.name }}
-          echo CONFIG_TARGET_x86=y >> .config
-          echo CONFIG_TARGET_x86_64=y >> .config
-          echo CONFIG_TARGET_x86_64_DEVICE_generic=y >> .config
+          
+          # 读取并写入 targets 配置
+          IFS=' ' read -ra TARGETS <<< "${{ matrix.plugin.targets }}"
+          for target in "${TARGETS[@]}"; do
+            echo "${target}=y" >> .config
+          done
           echo CONFIG_PACKAGE_${{ matrix.plugin.name }}=y >> .config
           sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
 
@@ -154,6 +187,18 @@ jobs:
           mkdir openwrt/${{ matrix.plugin.name }}-package
           mv openwrt/bin/packages/*/luci/${{ matrix.plugin.name }}* openwrt/${{ matrix.plugin.name }}-package || true
           mv openwrt/bin/packages/*/base/${{ matrix.plugin.name }}* openwrt/${{ matrix.plugin.name }}-package || true
+          mv openwrt/bin/packages/*/packages/${{ matrix.plugin.name }}* openwrt/${{ matrix.plugin.name }}-package || true
+          
+          extras='${{ toJSON(matrix.plugin.extras) }}'
+          if [ "$extras" != "null" ] && [ "$extras" != "[]" ]; then
+            echo "$extras" | jq -r '.[]' | while read -r extra; do
+              echo "Processing extra package: $extra"
+              mv openwrt/bin/packages/*/packages/${extra}* openwrt/${{ matrix.plugin.name }}-package || true
+              mv openwrt/bin/packages/*/luci/${extra}* openwrt/${{ matrix.plugin.name }}-package || true
+              mv openwrt/bin/packages/*/base/${extra}* openwrt/${{ matrix.plugin.name }}-package || true
+            done
+          fi
+          
           cd openwrt/${{ matrix.plugin.name }}-package
           echo "PACKAGE=$PWD" >> $GITHUB_ENV
           echo "PLUGIN_NAME=${{ matrix.plugin.name }}" >> $GITHUB_ENV
@@ -180,7 +225,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ matrix.plugin.name }}_${{ steps.tag.outputs.release_tag }}
+          tag_name: ${{ matrix.plugin.name }}_${{ matrix.plugin.tag }}_${{ steps.tag.outputs.release_tag }}
           body_path: release.txt
           files: ${{ env.PACKAGE }}/*
 
