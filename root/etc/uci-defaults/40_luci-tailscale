@@ -1,9 +1,11 @@
 #!/bin/sh
-
-uci -q batch <<-EOF >/dev/null
-	delete ucitrack.@tailscale[-1]
-	commit ucitrack
-EOF
+# Only touch ucitrack if it exists and has a tailscale section (avoids
+# "uci: Parse error (invalid command) at line 1, byte 0" when ucitrack
+# is missing or has no such section)
+if [ -f /etc/config/ucitrack ] && uci -q get ucitrack.@tailscale[-1] >/dev/null 2>&1; then
+	uci -q delete ucitrack.@tailscale[-1]
+	uci commit ucitrack
+fi
 
 rm -f /tmp/luci-indexcache
 exit 0
