@@ -19,4 +19,15 @@ endef
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
+# Override install to ensure luasrc is included (fix for LEDE/some builds
+# where luci.mk's wildcard ${CURDIR}/luasrc may fail due to CURDIR context)
+define Package/luci-app-tailscale/install
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci
+	$(CP) -pR $(PKG_BUILD_DIR)/luasrc/* $(1)/usr/lib/lua/luci/
+	$(INSTALL_DIR) $(1)/www
+	$(CP) -pR $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
+	$(INSTALL_DIR) $(1)/
+	$(CP) -pR $(PKG_BUILD_DIR)/root/* $(1)/
+endef
+
 # call BuildPackage - OpenWrt buildroot signature
